@@ -44,3 +44,28 @@ class Todo(db.Model):
   def __repr__(self):
     return f'<Todo: {self.id} | {self.user.username} | {self.text} | { "done" if self.done else "not done" }>'
 
+class TodoCategory(db.Model):
+  __tablename__ ='todo_category'
+  id = db.Column(db.Integer, primary_key=True)
+  todo_id = db.Column(db.Integer, db.ForeignKey('todo.id'), nullable=False)
+  category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+  last_modified = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+
+  def __repr__(self):
+    category_names = ', '.join([category.text for category in self.categories])
+    return f'<Todo: {self.id} | {self.user.username} | {self.text} | { "done" if self.done else "not done" } | categories [{category_names}]>' 
+
+
+class Category(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  text = db.Column(db.String(255), nullable=False)
+  user = db.relationship('User', backref=db.backref('categories', lazy='joined'))
+  todos = db.relationship('Todo', secondary='todo_category', backref=db.backref('categories', lazy=True))
+
+  def __init__(self, user_id, text):
+    self.user_id = user_id
+    self.text = text
+
+  def __repr__(self):
+    return f'<Category user:{self.user.username} - {self.text}>'
