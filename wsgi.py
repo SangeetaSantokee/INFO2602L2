@@ -88,7 +88,7 @@ def initialize():
   db.session.commit()
   print(bob)
   print('database initialized')
-  
+
 @app.cli.command('get-todos')
 @click.argument('username', default='bob')
 def get_user_todos(username):
