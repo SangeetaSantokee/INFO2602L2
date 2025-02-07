@@ -24,6 +24,20 @@ class User(db.Model):
       """Create hashed password."""
       self.password = generate_password_hash(password, method='pbkdf2:sha256')
 
+  def add_todo_category(self, todo_id, category_text):
+      todo = Todo.query.filter_by(id=todo_id, user_id=self.id).first()
+      if not todo:
+          return False
+          
+      category = Category.query.filter_by(user_id=self.id, text=category_text).first()
+      if not category:
+          category = Category(user_id=self.id, text=category_text)
+          db.session.add(category)
+          
+      todo.categories.append(category)
+      db.session.commit()
+      return True
+      
   def __repr__(self):
       return f'<User {self.id} {self.username} - {self.email}>'
 
