@@ -22,7 +22,7 @@ class User(db.Model):
 
   def set_password(self, password):
       """Create hashed password."""
-      self.password = generate_password_hash(password, method='sha256')
+      self.password = generate_password_hash(password, method='pbkdf2:sha256')
 
   def __repr__(self):
       return f'<User {self.id} {self.username} - {self.email}>'
