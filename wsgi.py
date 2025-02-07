@@ -1,5 +1,5 @@
 import click, sys
-from models import db, User
+from models import db, User, Todo
 from app import app
 from sqlalchemy.exc import IntegrityError
 
@@ -44,7 +44,7 @@ def change_email(username, email):
   db.session.commit()
   print(bob)
   
-  @app.cli.command('create-user')
+@app.cli.command('create-user')
 @click.argument('username', default='rick')
 @click.argument('email', default='rick@mail.com')
 @click.argument('password', default='rickpass')
@@ -60,3 +60,33 @@ def create_user(username, email, password):
     print("Username or email already taken!") #give the user a useful message
   else:
     print(newuser) # print the newly created user
+
+  @app.cli.command('delete-user')
+  @click.argument('username', default='bob')
+  def delete_user(username):
+    bob = User.query.filter_by(username=username).first()
+    if not bob:
+        print(f'{username} not found!')
+        return
+    db.session.delete(bob)
+    db.session.commit()
+    print(f'{username} deleted')
+
+class Todo(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) #set userid as a foreign key to user.id 
+  text = db.Column(db.String(255), nullable=False)
+  done = db.Column(db.Boolean, default=False)
+
+  def toggle(self):
+    self.done = not self.done
+    db.session.add(self)
+    db.session.commit()
+
+  def __init__(self, text):
+      self.text = text
+
+  def __repr__(self):
+
+    return f'<Todo: {self.id} | {self.user.username} | {self.text} | { "done" if self.done else "not done" }>'
+
